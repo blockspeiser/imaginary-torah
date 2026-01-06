@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /counters/conversations {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['nextId'])
+        && request.resource.data.nextId is int;
+      allow update: if request.auth != null
+        && request.resource.data.keys().hasOnly(['nextId'])
+        && request.resource.data.nextId is int
+        && resource.data.nextId is int
+        && request.resource.data.nextId == resource.data.nextId + 1;
+      allow delete: if false;
+    }
+
+    match /conversations/{docId} {
+      // Anyone can read
+      allow read: if true;
+
+      // Anyone with anonymous auth can create
+      allow create: if request.auth != null
+        && request.resource.data.authorUid == request.auth.uid;
+
+      function isHeartToggle() {
+        let oldHearts = (resource.data.heartsByUid is map) ? resource.data.heartsByUid : {};
+        let newHearts = (request.resource.data.heartsByUid is map) ? request.resource.data.heartsByUid : {};
+        let oldCount = (resource.data.heartsCount is int) ? resource.data.heartsCount : 0;
+        let newCount = (request.resource.data.heartsCount is int) ? request.resource.data.heartsCount : 0;
+
+        return request.auth != null
+          && request.resource.data.authorUid == resource.data.authorUid
+          && request.resource.data.id == resource.data.id
+          && request.resource.data.title == resource.data.title
+          && request.resource.data.transcript == resource.data.transcript
+          && request.resource.data.aboutLearner == resource.data.aboutLearner
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == resource.data.updatedAt
+          && (
+            // Only allow changing your own heart key
+            newHearts.diff(oldHearts).changedKeys().hasOnly([request.auth.uid])
+          )
+          && (
+            // heartsCount must change by exactly +1 or -1 based on your toggle
+            newCount == oldCount +
+              ((newHearts[request.auth.uid] == true ? 1 : 0) -
+               (oldHearts[request.auth.uid] == true ? 1 : 0))
+          );
+      }
+
+      // Author can edit their conversation; anyone authenticated can toggle hearts
+      allow update: if request.auth != null
+        && (
+          (resource.data.authorUid == request.auth.uid && request.resource.data.authorUid == resource.data.authorUid)
+          || isHeartToggle()
+        );
+
+      allow delete: if request.auth != null
+        && resource.data.authorUid == request.auth.uid;
+
+      match /votes/{voteId} {
+        allow read: if true;
+        allow create, delete: if request.auth != null && voteId == request.auth.uid;
+        allow update: if false;
+      }
+    }
+
+    match /users/{uid} {
+      allow read: if true;
+
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'displayName',
+          'email',
+          'photoURL',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+  }
+}

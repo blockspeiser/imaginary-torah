@@ -1,0 +1,71 @@
+:root {
+  --hot-pink: rgb(250 18 98);
+  --light-pink: rgb(255 228 238);
+  --dark-pink: rgb(200, 15, 80, 0.6);
+}
+a {
+  font-weight: 600;
+}
+a:hover:not(.no-underline) {
+  text-decoration: underline;
+}
+p {
+  margin-bottom: 20px;
+}
+ol {
+  margin-top: 16px;
+  padding-left: 32px;
+  list-style-type: decimal;
+}
+ol > li {
+  padding-left: 4px;
+}
+ol > li + li {
+  margin-top: 16px;
+}
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+.card {
+  padding: 2em;
+}
+.read-the-docs {
+  color: #888;
+}
+.hot-pink {
+  color: var(--hot-pink);
+}
+.dark-pink {
+  color: var(--dark-pink);
+}
+.border-hot-pink {
+  border-color: var(--hot-pink);
+}
+.light-pink {
+  color: var(--light-pink);
+}
+.bg-light-pink {
+  background-color: var(--light-pink);
+}
